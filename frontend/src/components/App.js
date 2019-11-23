@@ -1,14 +1,14 @@
-import React from 'react';
-import Todo from './Todo';
-import logo from '../assets/logo.svg';
+import React from "react";
+import { Button } from "antd";
+import Todo from "./Todo";
+import logo from "../assets/logo.svg";
+import "./App.less";
 
 function App() {
-  const greeting = 'Hello world!';
+  const greeting = "Hello world!";
   return (
     <div className="App">
-      <h1>{greeting}</h1>
-      <Todo id={1} />
-      <img src={logo} />
+      <Button>Hello</Button>
     </div>
   );
 }
