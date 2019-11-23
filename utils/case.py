@@ -1,10 +1,11 @@
 import json
 import os
 import urllib.request
-import shutil
 
-import PyPDF2
 import arrow
+from pdf2image import convert_from_path
+import pytesseract
+from PIL import Image
 
 
 class CaseObj:
@@ -30,7 +31,7 @@ class CaseObj:
             return arrow.get(self.__data["date_filed"]).date()
         else:
             return None
-        
+
     def get_date_created(self):
         if self.__data["date_created"]:
             return arrow.get(self.__data["date_created"]).date()
@@ -93,7 +94,7 @@ class CaseObj:
                         return 13
                     elif "chapter 15" in doc_descr.lower():
                         return 15
-                                    
+
         return None
 
 
@@ -104,7 +105,7 @@ class DocketEntryObj:
         for doc_data in self.__data["recap_documents"]:
             doc = DocumentObj(doc_data)
             self.documents.append(doc)
-    
+
     def get_id(self):
         return self.__data["id"]
 
@@ -134,10 +135,10 @@ class DocumentObj:
     def __init__(self, data):
         self.__data = data
         self.text = None
-    
+
     def get_id(self):
         return self.__data["id"]
-    
+
     def get_pacer_id(self):
         return self.__data["pacer_doc_id"]
 
@@ -166,33 +167,63 @@ class DocumentObj:
             return self.__data["is_available"]
 
     def download(self):
-        url = self.__data["filepath_ia"]
-        if not self.is_available() or not url:
+        url = self.get_file_url()
+        if not self.is_available() and not url:
             return
-        directory = 'tmp'
+        directory = 'tmp/{}'.format(self.get_id())
 
         # make directory if it doesn't exist
         try:
             os.stat(directory)
         except:
-            os.mkdir(directory)
+            os.makedirs(directory, exist_ok=True)
 
-        filename = '{0}/{1}'.format(directory, self.get_id())
+        pdf_filename = '{0}/doc.pdf'.format(directory)
 
-        with urllib.request.urlopen(url) as response, open(filename, 'wb+') as out_file:
+        with urllib.request.urlopen(url) as response, open(pdf_filename, 'wb+') as out_file:
             response = response.read()
             out_file.write(response)
 
-        with open(filename, 'rb') as f:
-            pdfReader = PyPDF2.PdfFileReader(f)
-            self.text = ''
-            for page in pdfReader.pages:
-                self.text += ' ' + page.extractText() 
+        # convert PDF to images
+        page_images = convert_from_path(pdf_filename, dpi=450, thread_count=4, fmt='jpg')
 
-            self.text = self.text.strip()
+        page_filenames = []
+        # crop images
+        for i, page in enumerate(page_images):
+            page = page.crop(
+                (
+                    0,
+                    0 + page.height * 0.055,
+                    page.width,
+                    page.height - page.height * 0.11,
+                )
+            )
+            fn = 'pg_{}.jpg'.format(i)
+            fn = '{0}/{1}'.format(directory, fn)
+            page.save(fn)
+            page_filenames.append(fn)
 
-        # delete downloaded pdf
-        os.remove(filename)
+        # convert images to text and compile
+        texts = []
+        tesseract_config = r'-l eng --oem 1'
+        for fn in page_filenames:
+            text = str(
+                pytesseract.image_to_string(
+                    Image.open(fn), config=tesseract_config
+                )
+            )
+            text = text.replace('-\n', '')
+            text = text.replace('\n', ' ')
+            text = text.strip()
+            texts.append(text)
+
+        result = ' '.join(texts)
+        self.text = result
+
+        # clean up
+        for fn in page_filenames:
+            os.remove(fn)
+        os.remove(pdf_filename)
 
 
 class PartyObj:

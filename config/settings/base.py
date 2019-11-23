@@ -67,6 +67,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "django_celery_beat",
     "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -307,3 +308,11 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
     "http://localhost:3000"
 ]
+
+# django-rest-framework
+# ------------------------------------------------------------------------------
+# https://github.com/encode/django-rest-framework/
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 25
+}

@@ -10,7 +10,9 @@ flower==0.9.3  # https://github.com/mher/flower
 PyPDF2==1.26.0  # https://pypi.org/project/PyPDF2/
 arrow==0.15.2  # https://github.com/crsmithdev/arrow
 elasticsearch-dsl>=6.0.0,<7.0.0  # https://github.com/elastic/elasticsearch-dsl-py
-
+django-elasticsearch-dsl-drf==0.20.3  # https://github.com/barseghyanartur/django-elasticsearch-dsl-drf/
+pytesseract==0.3.0  # https://github.com/madmaze/pytesseract
+pdf2image==1.10.0  # https://github.com/Belval/pdf2image
 
 # Django
 # ------------------------------------------------------------------------------

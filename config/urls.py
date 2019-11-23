@@ -5,8 +5,19 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from rest_framework.routers import DefaultRouter
+
+from bankruptcy.cases.views import CaseViewSet, DocketEntryViewSet, DocumentViewSet, SearchViewSet
+
+router = DefaultRouter()
+router.register(r'cases', CaseViewSet, basename='case')
+router.register(r'docket-entries', DocketEntryViewSet, basename='docket_entry')
+router.register(r'documents', DocumentViewSet, basename='document')
+router.register(r'search', SearchViewSet, basename='search')
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="build/index.html"), name="home"),
+    path("api/v1/", include(router.urls)),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),
