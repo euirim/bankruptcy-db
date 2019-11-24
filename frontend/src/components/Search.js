@@ -13,8 +13,13 @@ const Search = props => {
 
   useEffect(() => {
     setLoading(true);
+    console.log(process.env);
     axios
-      .get(`http://localhost:8000/api/v1/search?q=${queryString}`)
+      .get(
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:8000/api/v1/search?q=${queryString}`
+          : `/api/v1/search?q=${queryString}`
+      )
       .then(res => {
         setResults(res.data);
         setLoading(false);
