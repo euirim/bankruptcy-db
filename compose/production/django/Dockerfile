@@ -1,10 +1,12 @@
 FROM node:10-stretch-slim as client-builder
 
-WORKDIR /app
-COPY ./package.json /app
-RUN npm install && npm cache clean --force
+WORKDIR /app/frontend
+COPY ./frontend/package.json /app/frontend
+COPY ./frontend/yarn.lock /app/frontend
+RUN yarn && yarn cache clean --force
 COPY . /app
-RUN npm run build
+RUN yarn build_prod
+WORKDIR /app
 
 # Python build stage
 FROM python:3.7-alpine

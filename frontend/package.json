@@ -18,13 +18,15 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "NODE_ENV=dev craco build",
+    "build_prod": "NODE_ENV=prod PUBLIC_URL=https://bankruptcy-map-stanford-cs206.s3.amazonaws.com craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
+  "homepage": "https://bankruptcy-map-stanford-cs206.s3.amazonaws.com",
   "browserslist": {
     "production": [
       ">0.2%",
