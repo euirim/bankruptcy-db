@@ -3,10 +3,16 @@ import { Row, Col, Typography } from "antd";
 import "./Home.less";
 import "antd/lib/input/style";
 import CaseSearchBar from "./CaseSearchBar";
+import { useHistory } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
 const Home = () => {
+  const history = useHistory();
+  const onSearch = query => {
+    history.push(`/search/${encodeURI(query)}`)
+  };
+
   return (
     <>
       <div className="banner">
@@ -15,7 +21,7 @@ const Home = () => {
             <Title className="header" strong>
               Exploring Bankruptcies at Scale
             </Title>
-            <CaseSearchBar className="search-bar" />
+            <CaseSearchBar className="search-bar" onSearch={onSearch} />
             <Paragraph className="subtitle">
               Finding <strong>interesting trends</strong> in United States{" "}
               <strong>bankruptcy court documents</strong> using network science

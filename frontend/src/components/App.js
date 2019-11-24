@@ -33,7 +33,7 @@ function App() {
               <Route path="/about">
                 <About />
               </Route>
-              <Route path="/search">
+              <Route path="/search/:queryString">
                 <Search />
               </Route>
               <Route path="/">

@@ -5,14 +5,9 @@ import "antd/lib/input/style";
 const { Search } = Input;
 
 const CaseSearchBar = props => {
-  const [loading, setLoading] = useState(false);
   const onSearch = query => {
-    setLoading(true);
-
     // do something with query
     props.onSearch(query); 
-
-    setLoading(false);
   };
 
   return (
@@ -21,7 +16,8 @@ const CaseSearchBar = props => {
       placeholder={props.placeholder}
       onSearch={onSearch}
       size="large"
-      loading={loading}
+      defaultValue={props.passedQuery}
+      loading={props.loading}
     />
   );
 };
