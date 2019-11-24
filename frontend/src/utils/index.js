@@ -5,5 +5,5 @@ export function prettyDate(date) {
     return null;
   }
 
-  return format(date, 'MMMM d, yyyy');
+  return format(new Date(date), 'MMMM d, yyyy');
 }

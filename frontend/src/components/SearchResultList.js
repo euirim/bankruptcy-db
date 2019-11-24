@@ -28,8 +28,8 @@ const SearchResultList = props => {
           <SearchResultItem
             key={item.id}
             name={item.name}
-            dateFiled={new Date(item.date_filed)}
-            dateCreated={new Date(item.date_created)}
+            dateFiled={item.date_filed}
+            dateCreated={item.date_created}
           />
         )}
       />
