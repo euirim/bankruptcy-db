@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.generic import TemplateView
@@ -16,18 +16,9 @@ router.register(r'documents', DocumentViewSet, basename='document')
 router.register(r'search', SearchViewSet, basename='search')
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="build/index.html"), name="home"),
     path("api/v1/", include(router.urls)),
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("bankruptcy.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
-    # Custom URLs
-    path("cases/", include("bankruptcy.cases.urls", namespace="cases")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
@@ -55,3 +46,8 @@ if settings.DEBUG:
         import debug_toolbar
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+
+urlpatterns += [
+    re_path(r"^(?P<path>.*)/$", TemplateView.as_view(template_name="build/index.html")),
+    path("", TemplateView.as_view(template_name="build/index.html"), name="home"),
+]
