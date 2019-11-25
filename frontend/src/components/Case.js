@@ -97,7 +97,7 @@ const Case = () => {
           dateBlocked={caseItem.date_blocked}
           jurisdiction={caseItem.jurisdiction}
           chapter={caseItem.chapter}
-          linkToOriginal={caseItem.data.filepath_ia_json}
+          linkToOriginal={null}
         />
       )}
     </>

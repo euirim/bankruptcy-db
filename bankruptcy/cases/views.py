@@ -102,7 +102,7 @@ class SearchViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             fields=['name', 'jurisdiction']
         )[:30].to_queryset()
 
-        return Response(CaseSerializer(cases, many=True).data)
+        return Response(CaseSerializer(cases, many=True, context={'request': request}).data)
 
 
 """

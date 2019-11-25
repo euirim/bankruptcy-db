@@ -11,7 +11,7 @@ from bankruptcy.cases.views import CaseViewSet, DocketEntryViewSet, DocumentView
 
 router = DefaultRouter()
 router.register(r'cases', CaseViewSet, basename='case')
-router.register(r'docket-entries', DocketEntryViewSet, basename='docket_entry')
+router.register(r'docket-entries', DocketEntryViewSet, basename='docketentry')
 router.register(r'documents', DocumentViewSet, basename='document')
 router.register(r'search', SearchViewSet, basename='search')
 
