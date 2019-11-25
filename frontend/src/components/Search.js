@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from "react";
 import CaseSearchBar from "./CaseSearchBar";
-import axios from "axios";
 import "./Search.less";
 import SearchResultList from "./SearchResultList";
 import { useParams, useHistory } from "react-router-dom";
+import myAPI from "../utils/api";
 
-const Search = props => {
+const Search = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const { queryString } = useParams();
   const history = useHistory();
 
   useEffect(() => {
-    setLoading(true);
-    axios
-      .get(
-        process.env.NODE_ENV === "development"
-          ? `http://localhost:8000/api/v1/search?q=${queryString}`
-          : `search?q=${queryString}`
-      )
-      .then(res => {
-        setResults(res.data);
-        setLoading(false);
-      });
+    const getData = async () => {
+      setLoading(true);
+      try {
+        const res = await myAPI.search(queryString);
+        setResults(res);
+      } catch (e) {
+        console.log(e);
+      }
+      setLoading(false);
+    };
+    getData();
   }, [queryString]);
 
   const onSearch = query => {

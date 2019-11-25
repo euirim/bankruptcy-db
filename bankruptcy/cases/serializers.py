@@ -6,12 +6,15 @@ from .documents import CaseDocument
 
 
 class CaseSerializer(serializers.ModelSerializer):
-    docket_entries = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    recap_url = serializers.SerializerMethodField('get_recap_url')
+
+    def get_recap_url(self, obj):
+        return f"https://www.courtlistener.com{obj.data['absolute_url']}"
 
     class Meta:
         model = Case
-        fields = ['id', 'name', 'recap_id', 'pacer_id', 'date_filed', 'date_created', 'date_terminated',
-                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries']
+        fields = ['id', 'url', 'name', 'recap_id', 'pacer_id', 'date_filed', 'date_created', 'date_terminated',
+                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries', 'recap_url']
 
 
 class DocketEntrySerializer(serializers.ModelSerializer):
@@ -19,8 +22,8 @@ class DocketEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocketEntry
-        fields = ['id', 'recap_id', 'date_filed', 'date_created', 'description', 'case', 'documents']
-        depth = 2
+        fields = ['id', 'url', 'recap_id', 'date_filed', 'date_created', 'description', 'case', 'documents']
+        depth = 1
 
 
 class DocumentSerializer(serializers.ModelSerializer):
