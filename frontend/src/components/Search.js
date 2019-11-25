@@ -17,7 +17,7 @@ const Search = props => {
       .get(
         process.env.NODE_ENV === "development"
           ? `http://localhost:8000/api/v1/search?q=${queryString}`
-          : `/api/v1/search?q=${queryString}`
+          : `search?q=${queryString}`
       )
       .then(res => {
         setResults(res.data);
