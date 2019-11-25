@@ -13,7 +13,6 @@ const Search = props => {
 
   useEffect(() => {
     setLoading(true);
-    console.log(process.env);
     axios
       .get(
         process.env.NODE_ENV === "development"

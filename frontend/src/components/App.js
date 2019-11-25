@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Home from "./Home";
 import About from "./About";
 import Search from "./Search";
+import Case from "./Case";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -32,6 +33,9 @@ function App() {
             <Switch>
               <Route path="/about">
                 <About />
+              </Route>
+              <Route path="/cases/:id">
+                <Case />
               </Route>
               <Route path="/search/:queryString">
                 <Search />
