@@ -19,7 +19,8 @@ class Case(models.Model):
         blank=True,
         null=True
     )
-    keywords = TaggableManager()
+    recap_url = models.CharField(max_length=2048, blank=True, null=True)
+    entities = TaggableManager()
     preview = ThumbnailerImageField(upload_to='case_previews', blank=True)
     data = JSONField()
 
@@ -57,7 +58,7 @@ class Document(models.Model):
         related_name='documents'
     )
     preview = ThumbnailerImageField(upload_to='doc_previews', blank=True)
-    keywords = TaggableManager()
+    entities = TaggableManager()
 
     def __str__(self):
         return self.pacer_id
