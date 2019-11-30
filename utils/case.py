@@ -97,6 +97,11 @@ class CaseObj:
 
         return None
 
+    def get_recap_url(self):
+        if self.__data["absolute_url"] is None:
+            return None
+        return f"https://www.courtlistener.com{self.__data['absolute_url']}"
+
 
 class DocketEntryObj:
     def __init__(self, data):
