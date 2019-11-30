@@ -68,6 +68,8 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
+    "easy_thumbnails",
+    "taggit",
 ]
 
 LOCAL_APPS = [
@@ -295,7 +297,7 @@ STATICFILES_FINDERS += ["compressor.finders.CompressorFinder"]
 # django-elasticsearch-dsl
 # ------------------------------------------------------------------------------
 # https://django-elasticsearch-dsl.readthedocs.io/en/latest/
-ELASTICSEARCH_DSL={
+ELASTICSEARCH_DSL = {
     'default': {
         'hosts': 'elasticsearch:9200'
     },
@@ -315,4 +317,18 @@ CORS_ORIGIN_WHITELIST = [
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 25
+}
+
+# django-taggit
+# ------------------------------------------------------------------------------
+# https://github.com/SmileyChris/easy-thumbnails
+TAGGIT_CASE_INSENSITIVE = True
+
+# easy-thumbnails
+# ------------------------------------------------------------------------------
+# https://github.com/SmileyChris/easy-thumbnails
+THUMBNAIL_ALIASES = {
+    '': {
+        'doc_thumbnail': {'size': (100, 130), 'crop': True},
+    },
 }

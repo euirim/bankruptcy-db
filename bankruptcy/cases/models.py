@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
+from taggit.managers import TaggableManager
+from easy_thumbnails.fields import ThumbnailerImageField
+
+
 class Case(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     recap_id = models.IntegerField()
@@ -15,6 +19,8 @@ class Case(models.Model):
         blank=True,
         null=True
     )
+    keywords = TaggableManager()
+    preview = ThumbnailerImageField(upload_to='case_previews', blank=True)
     data = JSONField()
 
     def __str__(self):
@@ -27,8 +33,8 @@ class DocketEntry(models.Model):
     date_created = models.DateField(db_index=True)
     description = models.TextField(blank=True, null=True)
     case = models.ForeignKey(
-        'Case', 
-        on_delete=models.CASCADE, 
+        'Case',
+        on_delete=models.CASCADE,
         related_name='docket_entries'
     )
 
@@ -46,10 +52,12 @@ class Document(models.Model):
     description = models.TextField(blank=True, null=True)
     text = models.TextField(blank=True, null=True)
     docket_entry = models.ForeignKey(
-        'DocketEntry', 
+        'DocketEntry',
         on_delete=models.CASCADE,
         related_name='documents'
     )
+    preview = ThumbnailerImageField(upload_to='doc_previews', blank=True)
+    keywords = TaggableManager()
 
     def __str__(self):
         return self.pacer_id
