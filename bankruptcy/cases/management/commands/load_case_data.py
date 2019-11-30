@@ -8,20 +8,26 @@ from bankruptcy.cases.models import Case, DocketEntry, Document
 
 
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%m-%d %H:%M',
-    filename='errors.log',
-    filemode='w'
+    filename='../logs/total.log',
+    filemode='a'
 )
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
+console.setLevel(logging.INFO)
+console_formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(console_formatter)
+
+total_formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+errorsLog = logging.FileHandler(filename='../logs/errors.log', mode='a')
+errorsLog.setLevel(logging.WARNING)
+errorsLog.setFormatter(total_formatter)
 
 logger = logging.getLogger('load_case_data')
+logger.addHandler(console)
+logger.addHandler(errorsLog)
 
 
 def get_obj_if_exists(obj, model):
@@ -114,6 +120,8 @@ class Command(BaseCommand):
         for file in os.listdir(DATA_LOCATION):
             if file.endswith('.json'):
                 case_files.append(os.path.join(DATA_LOCATION, file))
+
+        # Load case -> creditor JSON.
 
         num_cases = len(case_files)
         stats = Stats(num_cases)
@@ -212,14 +220,6 @@ class Command(BaseCommand):
                     for doc in entry.documents:
                         try:
                             try:
-                                doc.download()
-                            except:
-                                stats.doc.failed_unknown += 1
-                                logger.warning(
-                                    f'(Case {case_num} / {num_cases}) Failed to download document: {doc.get_id()}.'
-                                )
-
-                            try:
                                 doc_args = {
                                     'recap_id': doc.get_id(),
                                     'pacer_id': doc.get_pacer_id(),
@@ -233,6 +233,14 @@ class Command(BaseCommand):
                                 }
                             except:
                                 raise CaseAPIError("Creating doc argument object failed.")
+
+                            try:
+                                docModelObject = get_obj_if_exists(doc, Document)
+                            except MultipleObjectsReturned:
+                                raise GetDocError("Multiple objects returned.")
+                            except:
+                                stats.doc.failed_unknown += 1
+                                raise GetDocError("Failed for unknown reason.")
 
                             # update or create document
                             if docModelObject:
@@ -248,9 +256,11 @@ class Command(BaseCommand):
                                     stats.entry.failed_unknown += 1
                                     raise DocModelActionFailure("Document model create failed.")
 
-                                    docModelObject = Document.objects.create(**doc_args)
+                            # extract entities from doc
 
-                            # extract entities from doc and add
+                            # extract creditors from doc (if in provided JSON)
+
+                            # consolidate creditors and entities, and add them as tags to doc
 
                         except Exception as err:
                             stats.doc.failed += 1
@@ -269,8 +279,6 @@ class Command(BaseCommand):
                     continue
 
                 stats.entry.loaded += 1
-
-            # consolidate case document entities
 
             stats.case.loaded += 1
             logging.info('Case {0} / {1} Reviewed. (id: {2})'.format(case_num, num_cases, case.get_id()))

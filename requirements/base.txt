@@ -14,6 +14,7 @@ django-elasticsearch-dsl-drf==0.20.3  # https://github.com/barseghyanartur/djang
 pytesseract==0.3.0  # https://github.com/madmaze/pytesseract
 pdf2image==1.10.0  # https://github.com/Belval/pdf2image
 easy-thumbnails==2.6  # https://github.com/SmileyChris/easy-thumbnails
+spacy==2.1.8  # https://github.com/explosion/spaCy
 
 # Django
 # ------------------------------------------------------------------------------
