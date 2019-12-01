@@ -281,4 +281,5 @@ bankruptcy/media/
 ### Data
 data/*
 !data/samples
+!data/form_data_nysb.json
 tmp
