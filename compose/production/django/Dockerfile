@@ -22,7 +22,13 @@ RUN apk update \
   # CFFI dependencies
   && apk add libffi-dev py-cffi \
   # for spaCy
-  && apk add g++
+  && apk add g++ \
+  # for pdf2image
+  && apk add poppler-utils \
+  # microsoft fonts
+  && apk --no-cache add msttcorefonts-installer fontconfig && \
+    update-ms-fonts && \
+    fc-cache -f
 
 RUN addgroup -S django \
     && adduser -S -G django django
@@ -34,6 +40,9 @@ RUN pip install --no-cache-dir -r /requirements/production.txt \
 
 # Install Spacy Models
 RUN python -m spacy download en_core_web_lg
+
+# Install NLTK corpus
+RUN python -m nltk.downloader words brown
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint

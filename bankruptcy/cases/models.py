@@ -2,11 +2,28 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 
 from taggit.managers import TaggableManager
+from taggit.models import GenericTaggedItemBase, Tag
 from easy_thumbnails.fields import ThumbnailerImageField
 
 
+class PersonTagged(GenericTaggedItemBase):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
+
+
+class OrgTagged(GenericTaggedItemBase):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
+
+
 class Case(models.Model):
-    name = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=200, db_index=True)
     recap_id = models.IntegerField()
     pacer_id = models.CharField(max_length=50, db_index=True)
     date_filed = models.DateField(db_index=True, blank=True, null=True)
@@ -21,7 +38,8 @@ class Case(models.Model):
     )
     recap_url = models.CharField(max_length=2048, blank=True, null=True)
     entities = TaggableManager()
-    preview = ThumbnailerImageField(upload_to='case_previews', blank=True)
+    people = TaggableManager(through=PersonTagged, related_name="person_cases")
+    organizations = TaggableManager(through=OrgTagged, related_name="org_cases")
     data = JSONField()
 
     def __str__(self):
@@ -59,6 +77,8 @@ class Document(models.Model):
     )
     preview = ThumbnailerImageField(upload_to='doc_previews', blank=True)
     entities = TaggableManager()
+    people = TaggableManager(through=PersonTagged, related_name="person_docs")
+    organizations = TaggableManager(through=OrgTagged, related_name="org_docs")
 
     def __str__(self):
         return self.pacer_id

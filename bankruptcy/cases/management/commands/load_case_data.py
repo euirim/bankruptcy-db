@@ -1,3 +1,4 @@
+from io import BytesIO
 import logging
 import os
 
@@ -5,13 +6,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from utils.case import CaseObj, DocketEntryObj, DocumentObj
 from bankruptcy.cases.models import Case, DocketEntry, Document
-
+from django.core.files import File
 
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%m-%d %H:%M',
-    filename='../logs/total.log',
+    filename='./logs/total.log',
     filemode='a'
 )
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -21,7 +22,7 @@ console_formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s'
 console.setFormatter(console_formatter)
 
 total_formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-errorsLog = logging.FileHandler(filename='../logs/errors.log', mode='a')
+errorsLog = logging.FileHandler(filename='./logs/errors.log', mode='a')
 errorsLog.setLevel(logging.WARNING)
 errorsLog.setFormatter(total_formatter)
 
@@ -134,18 +135,10 @@ class Command(BaseCommand):
                 except:
                     raise CaseParseError
 
-                # check if case exists
-                try:
-                    caseModelObject = get_obj_if_exists(case, Case)
-                except MultipleObjectsReturned:
-                    raise GetCaseError("Multiple objects returned.")
-                except:
-                    stats.case.failed_unknown += 1
-                    raise GetCaseError("Failed for unknown reason.")
-
                 # Build case fields for django model interaction
                 try:
                     case_args = {
+                        'id': case.get_id(),
                         'name': case.get_case_name(),
                         'recap_id': case.get_id(),
                         'pacer_id': case.get_pacer_id(),
@@ -162,18 +155,11 @@ class Command(BaseCommand):
                     raise CaseAPIError("Creating case argument object failed.")
 
                 # update or create case
-                if caseModelObject:
-                    try:
-                        caseModelObject.update(**case_args)
-                    except:
-                        stats.case.failed_unknown += 1
-                        raise CaseModelActionFailure("Case model update failed.")
-                else:
-                    try:
-                        caseModelObject = Case.objects.create(**case_args)
-                    except:
-                        stats.case.failed_unknown += 1
-                        raise CaseModelActionFailure("Case model create failed.")
+                try:
+                    caseModelObject, created = Case.objects.update_or_create(**case_args)
+                except Exception as err:
+                    raise CaseModelActionFailure(f"Case model update/create failed. Explanation: {err}")
+
             except Exception as err:
                 logger.error(f'Case {case_num} / {num_cases} Failed.\n Explanation: "{err}"')
                 stats.case.failed += 1
@@ -185,6 +171,7 @@ class Command(BaseCommand):
                 try:
                     try:
                         entry_args = {
+                            'id': entry.get_id(),
                             'recap_id': entry.get_id(),
                             'date_filed': entry.get_date_filed(),
                             'date_created': entry.get_date_created(),
@@ -194,33 +181,18 @@ class Command(BaseCommand):
                     except:
                         raise CaseAPIError("Creating entry argument object failed.")
 
-                    try:
-                        entryModelObject = get_obj_if_exists(entry, DocketEntry)
-                    except MultipleObjectsReturned:
-                        raise GetEntryError("Multiple objects returned.")
-                    except:
-                        stats.entry.failed_unknown += 1
-                        raise GetEntryError("Failed for unknown reason.")
-
                     # update or create docket entry
-                    if entryModelObject:
-                        try:
-                            entryModelObject.update(**entry_args)
-                        except:
-                            stats.entry.failed_unknown += 1
-                            raise DocketEntryModelActionFailure("DocketEntry model update failed.")
-                    else:
-                        try:
-                            entryModelObject = DocketEntry.objects.create(**entry_args)
-                        except:
-                            stats.entry.failed_unknown += 1
-                            raise DocketEntryModelActionFailure("DocketEntry model create failed.")
+                    try:
+                        entryModelObject, created = DocketEntry.objects.update_or_create(**entry_args)
+                    except Exception as err:
+                        raise DocketEntryModelActionFailure(f"DocketEntry model update/create failed. Explanation: {err}")
 
                     stats.doc.count += len(entry.documents)
                     for doc in entry.documents:
                         try:
                             try:
                                 doc_args = {
+                                    'id': doc.get_id(),
                                     'recap_id': doc.get_id(),
                                     'pacer_id': doc.get_pacer_id(),
                                     'doc_type': doc.get_type(),
@@ -234,38 +206,24 @@ class Command(BaseCommand):
                             except:
                                 raise CaseAPIError("Creating doc argument object failed.")
 
-                            try:
-                                docModelObject = get_obj_if_exists(doc, Document)
-                            except MultipleObjectsReturned:
-                                raise GetDocError("Multiple objects returned.")
-                            except:
-                                stats.doc.failed_unknown += 1
-                                raise GetDocError("Failed for unknown reason.")
-
                             # update or create document
-                            if docModelObject:
-                                try:
-                                    docModelObject.update(**doc_args)
-                                except:
-                                    stats.doc.failed_unknown += 1
-                                    raise DocModelActionFailure("Document model update failed.")
-                            else:
-                                try:
-                                    docModelObject = Document.objects.create(**doc_args)
-                                except:
-                                    stats.entry.failed_unknown += 1
-                                    raise DocModelActionFailure("Document model create failed.")
+                            try:
+                                docModelObject, created = Document.objects.update_or_create(**doc_args)
+                            except Exception as err:
+                                raise DocModelActionFailure(f"Document model update/create failed. Explanation: {err}")
 
                             # add thumbnail
                             try:
                                 thumbnail = doc.get_thumbnail()
-                                docModelObject.preview = thumbnail
-                                docModelObject.save()
+                                if thumbnail is not None:
+                                    blob = BytesIO()
+                                    thumbnail.save(blob, 'JPEG')
+                                    docModelObject.preview.save(f'{doc.get_id()}.jpg', File(blob), save=False)
+                                    docModelObject.save()
                             except Exception as err:
                                 logger.warning(
                                     f'(Case {case_num} / {num_cases}) Getting thumbnail for doc {doc.get_id()} failed.\n Explanation: {err}'
                                 )
-                                continue
 
                         except Exception as err:
                             stats.doc.failed += 1
@@ -288,8 +246,10 @@ class Command(BaseCommand):
             stats.case.loaded += 1
             logging.info('Case {0} / {1} Reviewed. (id: {2})'.format(case_num, num_cases, case.get_id()))
 
-        final_msg = f'Cases Loaded: {stats.case.loaded} / {num_cases}  |  Cases Failed: {stats.case.failed}  |  Number of Failures with Unknown Explanations: {stats.case.failed_unknown}'
-        final_msg = f'Entries Loaded: {stats.entry.loaded} / {stats.entry.count}  |  Entries Failed: {stats.entry.failed}  |  Number of Failures with Unknown Explanations: {stats.entry.failed_unknown}'
-        final_msg = f'Docs Loaded: {stats.doc.loaded} / {stats.doc.count}  |  Docs Failed: {stats.doc.failed}  |  Number of Failures with Unknown Explanations: {stats.doc.failed_unknown}'
+        final_case_msg = f'Cases Loaded: {stats.case.loaded} / {num_cases}  |  Cases Failed: {stats.case.failed}  |  Number of Failures with Unknown Explanations: {stats.case.failed_unknown}'
+        final_entries_msg = f'Entries Loaded: {stats.entry.loaded} / {stats.entry.count}  |  Entries Failed: {stats.entry.failed}  |  Number of Failures with Unknown Explanations: {stats.entry.failed_unknown}'
+        final_docs_msg = f'Docs Loaded: {stats.doc.loaded} / {stats.doc.count}  |  Docs Failed: {stats.doc.failed}  |  Number of Failures with Unknown Explanations: {stats.doc.failed_unknown}'
 
-        self.stdout.write(self.style.SUCCESS(final_msg))
+        self.stdout.write(self.style.SUCCESS(final_case_msg))
+        self.stdout.write(self.style.SUCCESS(final_entries_msg))
+        self.stdout.write(self.style.SUCCESS(final_docs_msg))

@@ -15,7 +15,13 @@ RUN apk update \
   # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
   && apk add postgresql-client \
   # for spaCy
-  && apk add g++
+  && apk add g++ \
+  # for pdf2image
+  && apk add poppler-utils \
+  # microsoft fonts
+  && apk --no-cache add msttcorefonts-installer fontconfig && \
+    update-ms-fonts && \
+    fc-cache -f
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
@@ -23,6 +29,9 @@ RUN pip install -r /requirements/local.txt
 
 # Install Spacy Models
 RUN python -m spacy download en_core_web_lg
+
+# Install NLTK corpus
+RUN python -m nltk.downloader words brown
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
