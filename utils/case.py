@@ -8,7 +8,7 @@ import pytesseract
 from PIL import Image
 
 
-class CaseObj:
+class Case:
     def __init__(self, filename):
         with open(filename, 'r') as f:
             self.__data = json.load(f)
@@ -103,7 +103,7 @@ class CaseObj:
         return f"https://www.courtlistener.com{self.__data['absolute_url']}"
 
 
-class DocketEntryObj:
+class DocketEntry:
     def __init__(self, data):
         self.__data = data
         self.documents = []
@@ -136,7 +136,7 @@ class DocketEntryObj:
         return self.documents
 
 
-class DocumentObj:
+class Document:
     def __init__(self, data):
         self.__data = data
         self.text = None
@@ -212,6 +212,8 @@ class DocumentObj:
         texts = []
         tesseract_config = r'-l eng --oem 1'
         for fn in page_filenames:
+            # prevent weird occasional tesseract unfound bug
+            pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
             text = str(
                 pytesseract.image_to_string(
                     Image.open(fn), config=tesseract_config
@@ -253,7 +255,7 @@ class DocumentObj:
         return first_page
 
 
-class PartyObj:
+class Party:
     def __init__(self, data):
         self.__data = data
 

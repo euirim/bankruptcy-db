@@ -6,6 +6,14 @@ from taggit.models import GenericTaggedItemBase, Tag
 from easy_thumbnails.fields import ThumbnailerImageField
 
 
+class CreditorTagged(GenericTaggedItemBase):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
+
+
 class PersonTagged(GenericTaggedItemBase):
     tag = models.ForeignKey(
         Tag,
@@ -40,6 +48,7 @@ class Case(models.Model):
     entities = TaggableManager()
     people = TaggableManager(through=PersonTagged, related_name="person_cases")
     organizations = TaggableManager(through=OrgTagged, related_name="org_cases")
+    creditors = TaggableManager(through=CreditorTagged, related_name="creditor_cases")
     data = JSONField()
 
     def __str__(self):

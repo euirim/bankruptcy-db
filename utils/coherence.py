@@ -1,7 +1,7 @@
 import sys
 import string
 import nltk
-from utils.case import Case, DocketEntry, Document, Party
+from .case import Case, DocketEntry, Document, Party
 import os
 
 class CoherenceDetector:

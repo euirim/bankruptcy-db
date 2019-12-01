@@ -6,7 +6,7 @@ sys.path.append("..")
 import spacy
 nlp = spacy.load("en_core_web_lg")
 
-from utils.case import Case, DocketEntry, Document, Party
+from .case import Case, DocketEntry, Document, Party
 DATA_LOCATION = "../data/results_nysb_all_chap_11" #CHANGE THIS TO REFLECT WHERE EXTRACT TXT FILES ARE
 
 def find_repeat(s):
@@ -198,7 +198,6 @@ def agg_dict(A):
                 # make sure not a loop
                 if after not in combined or combined[after] != before:
                     combined[before] = after
-                    print(before,"->", after)
 
     to_delete = []
     for before, after in combined.items():
@@ -231,16 +230,29 @@ def agg_dict(A):
 
 # returns a map of people+counts for multiple files
 # parameter: array of strings of file names
-def mult_files_ppl(files):
-    if len(files) == 0 or files[0] not in file_to_ppl:
-        return None
-    starting_set = file_to_ppl[files[0]]
-    for index in range(1,len(files)):
-        curr_ppl = file_to_ppl[files[index]]
-        # add this files' items to starting_set
-        for name, count in curr_ppl.items():
-            if name in starting_set:
-                starting_set[name] = starting_set[name] + count
-            else:
-                starting_set[name] = count
-    return starting_set
+def get_ppl_and_orgs(text):
+    doc = nlp(text)
+    orgs = most_freq_orgs(doc.ents)
+    ppl = most_freq_persons(doc.ents)
+    orgs, ppl = move_ppl_to_orgs(orgs, ppl)
+    orgs = agg_dict(orgs)
+    ppl = agg_dict(ppl)
+    return ppl, orgs
+
+def agg_across_entities(entity_lists_by_doc):
+    """
+    Return aggregate entities in descending order by count.
+    """
+    if not entity_lists_by_doc or len(entity_lists_by_doc) == 0:
+        return []
+
+    result_set = {}
+    for doc_id in entity_lists_by_doc.keys():
+        cur_list = entity_lists_by_doc[doc_id]
+        for name, count in cur_list.items():
+            result_set[name] = result_set.get(name, 0) + count
+
+    return [
+        it[0]
+        for it in sorted(result_set.items(), key=lambda x: x[1], reverse=True)
+    ]

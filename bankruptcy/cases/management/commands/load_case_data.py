@@ -4,7 +4,7 @@ import os
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from utils.case import CaseObj, DocketEntryObj, DocumentObj
+from utils.case import Case as CaseObj, DocketEntry as DocketEntryObj, Document as DocumentObj
 from bankruptcy.cases.models import Case, DocketEntry, Document
 from django.core.files import File
 
