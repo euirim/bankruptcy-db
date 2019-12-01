@@ -43,7 +43,7 @@ class Command(BaseCommand):
         OCR_OUTPUT_DIR = 'data/ocr_results'
 
         # Store doc text and extract entities
-        docs = Document.objects.all() 
+        docs = Document.objects.all()
 
         num_docs = len(docs)
         for i, doc in enumerate(docs):
@@ -54,6 +54,11 @@ class Command(BaseCommand):
 
             except Exception as err:
                 logger.error(f'(Doc {i} / {num_docs}) Failed to get doc text. Explanation: {err}')
+                continue
+
+            # check if text is coherent. if not, continue loop
+
+            # get entities from text
 
         cases = Case.objects.all()
 

@@ -230,6 +230,28 @@ class DocumentObj:
             os.remove(fn)
         os.remove(pdf_filename)
 
+    def get_thumbnail(self):
+        url = self.get_file_url()
+        if not self.is_available() and not url:
+            return
+        directory = f'tmp/{self.get_id()}'
+
+        try:
+            os.stat(directory)
+        except:
+            os.makedirs(directory, exist_ok=True)
+
+        pdf_filename = f'{directory}doc.pdf'
+
+        with urllib.request.urlopen(url) as response, open(pdf_filename, 'wb+') as out_file:
+            response = response.read()
+            out_file.write(response)
+
+        first_page = convert_from_path(pdf_filename, dpi=150, thread_count=4, fmt='jpg')[0]
+
+        os.remove(pdf_filename)
+        return first_page
+
 
 class PartyObj:
     def __init__(self, data):

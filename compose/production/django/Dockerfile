@@ -20,7 +20,9 @@ RUN apk update \
   # Pillow dependencies
   && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
   # CFFI dependencies
-  && apk add libffi-dev py-cffi
+  && apk add libffi-dev py-cffi \
+  # for spaCy
+  && apk add g++
 
 RUN addgroup -S django \
     && adduser -S -G django django
@@ -29,6 +31,9 @@ RUN addgroup -S django \
 COPY ./requirements /requirements
 RUN pip install --no-cache-dir -r /requirements/production.txt \
     && rm -rf /requirements
+
+# Install Spacy Models
+RUN python -m spacy download en_core_web_lg
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint

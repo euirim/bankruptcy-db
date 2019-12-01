@@ -256,16 +256,21 @@ class Command(BaseCommand):
                                     stats.entry.failed_unknown += 1
                                     raise DocModelActionFailure("Document model create failed.")
 
-                            # extract entities from doc
-
-                            # extract creditors from doc (if in provided JSON)
-
-                            # consolidate creditors and entities, and add them as tags to doc
+                            # add thumbnail
+                            try:
+                                thumbnail = doc.get_thumbnail()
+                                docModelObject.preview = thumbnail
+                                docModelObject.save()
+                            except Exception as err:
+                                logger.warning(
+                                    f'(Case {case_num} / {num_cases}) Getting thumbnail for doc {doc.get_id()} failed.\n Explanation: {err}'
+                                )
+                                continue
 
                         except Exception as err:
                             stats.doc.failed += 1
                             logger.warning(
-                                f'(Case {case_num} / {num_cases}) Processing doc {doc.get_id()} failed.'
+                                f'(Case {case_num} / {num_cases}) Processing doc {doc.get_id()} failed.\n Explanation: {err}'
                             )
                             continue
 
@@ -274,15 +279,17 @@ class Command(BaseCommand):
                 except Exception as err:
                     stats.entry.failed += 1
                     logger.warning(
-                        f'(Case {case_num} / {num_cases}) Processing entry {entry.get_id()} failed.'
+                        f'(Case {case_num} / {num_cases}) Processing entry {entry.get_id()} failed.\n Explanation: {err}'
                     )
                     continue
-
+                
                 stats.entry.loaded += 1
 
             stats.case.loaded += 1
             logging.info('Case {0} / {1} Reviewed. (id: {2})'.format(case_num, num_cases, case.get_id()))
 
         final_msg = f'Cases Loaded: {stats.case.loaded} / {num_cases}  |  Cases Failed: {stats.case.failed}  |  Number of Failures with Unknown Explanations: {stats.case.failed_unknown}'
+        final_msg = f'Entries Loaded: {stats.entry.loaded} / {stats.entry.count}  |  Entries Failed: {stats.entry.failed}  |  Number of Failures with Unknown Explanations: {stats.entry.failed_unknown}'
+        final_msg = f'Docs Loaded: {stats.doc.loaded} / {stats.doc.count}  |  Docs Failed: {stats.doc.failed}  |  Number of Failures with Unknown Explanations: {stats.doc.failed_unknown}'
 
         self.stdout.write(self.style.SUCCESS(final_msg))

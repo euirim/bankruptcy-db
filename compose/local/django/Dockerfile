@@ -13,11 +13,16 @@ RUN apk update \
   # Translations dependencies
   && apk add gettext \
   # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
-  && apk add postgresql-client
+  && apk add postgresql-client \
+  # for spaCy
+  && apk add g++
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
 RUN pip install -r /requirements/local.txt
+
+# Install Spacy Models
+RUN python -m spacy download en_core_web_lg
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
