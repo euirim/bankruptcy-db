@@ -3,8 +3,10 @@ import os
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from utils.case import CaseObj, DocketEntryObj, DocumentObj
+
 from bankruptcy.cases.models import Case, DocketEntry, Document
+from utils.case import CaseObj, DocketEntryObj, DocumentObj
+from utils.coherence import CoherenceDetector
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -45,18 +47,33 @@ class Command(BaseCommand):
         # Store doc text and extract entities
         docs = Document.objects.all()
 
+        # initialize coherence detector
+        cd = CoherenceDetector()
+
         num_docs = len(docs)
         for i, doc in enumerate(docs):
             # try to get doc text from file
             try:
                 ocr_fn = f'{doc.docket_entry.case.recap_id}_{doc.docket_entry.recap_id}_{doc.recap_id}'
                 ocr_path = os.path.join(OCR_OUTPUT_DIR, ocr_fn)
+                if not os.path.exists(ocr_path):
+                    logger.debug(f'(Doc {i} / {num_docs}) File corresponding to doc does not exist.')
+                    continue
 
+                with open(ocr_path, 'r') as f:
+                    text = f.read()
             except Exception as err:
                 logger.error(f'(Doc {i} / {num_docs}) Failed to get doc text. Explanation: {err}')
                 continue
 
             # check if text is coherent. if not, continue loop
+            try:
+                if not cd.check_coherence(text):
+                    logger.debug(f'(Doc {i} / {num_docs}) Text not coherent. Skipping.')
+                    continue
+            except Exception as err:
+                logger.error(f'(Doc {i} / {num_docs}) Coherence detection failed.')
+                continue
 
             # get entities from text
 
@@ -68,7 +85,7 @@ class Command(BaseCommand):
                 # add case creditor entities
                 pass
             except Exception as err:
-                logger.error(f'(Case {i} / {num_cases}) Failed to add content to case. Explanation: {err}')
+                logger.error(f'(Case {i} / {num_cases}) Failed to add creditor info to case. Explanation: {err}')
 
 
             # consolidate case document entities and add
