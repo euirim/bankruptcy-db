@@ -1,14 +1,14 @@
+import csv
 import json
 import logging
 import os
+import math
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 
 from bankruptcy.cases.models import Case, DocketEntry, Document
 from utils.case import Case as CaseObj, DocketEntry as DocketEntryObj, Document as DocumentObj
-from utils.coherence import CoherenceDetector
-from utils.entities import get_ppl_and_orgs, agg_across_entities
 
 if not os.path.exists('./logs'):
     os.makedirs('./logs')
@@ -36,6 +36,15 @@ logger.addHandler(console)
 logger.addHandler(errorsLog)
 
 
+def get_top_percentile(ls, percentile, minimum):
+    """
+    Assumes descending order.
+    """
+    if len(ls) < minimum:
+        return ls
+
+    return ls[:max(math.floor(percentile / 100 * len(ls)), minimum)]
+
 class Command(BaseCommand):
     help = 'Loads and processes case content from text and JSON files into the database.'
 
@@ -47,13 +56,49 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        OCR_OUTPUT_DIR = 'data/ocr_nysb'
-        FORM_DATA_FILENAME = 'data/form_data_nysb.json'
+        OCR_OUTPUT_DIR = './data/ocr_nysb'
+        FORM_DATA_FILENAME = './data/form_data_nysb.json'
+        ENTITY_DATA_FILENAME = './data/doc_to_entities.csv'
+        MIN_ENTITY_THRESHOLD = 10
 
         cases = Case.objects.all()
 
-        # initialize coherence detector
-        cd = CoherenceDetector()
+        # Add entities to documents
+        num_entities_failed = 0
+        num_entities_not_found = 0
+        with open(ENTITY_DATA_FILENAME, 'r', newline='') as f:
+            reader = csv.reader(f, quoting=csv.QUOTE_MINIMAL, delimiter='\t')
+            for i, row in enumerate(reader):
+                try:
+                    # skip header
+                    if i == 0:
+                        continue
+
+                    doc_id = row[0]
+                    people = row[1]
+                    organizations = row[2]
+
+                    try:
+                        doc = Document.objects.get(id=doc_id)
+                    except Exception as err:
+                        logger.error(f'Document {doc_id} not found. Reason: {err}')
+                        num_entities_not_found += 1
+                        continue
+
+                    # Filter out top 10%
+                    people = get_top_percentile(people, 20, MIN_ENTITY_THRESHOLD)
+                    organizations = get_top_percentile(organizations, 20, MIN_ENTITY_THRESHOLD)
+
+                    doc.people.set(*people)
+                    doc.organizations.set(*organizations)
+                    total = people + organizations
+                    doc.entities.set(*total)
+                    doc.save()
+                except Exception as err:
+                    logger.error(f'(doc: {doc_id}) Can\'t load entities for doc. Reason: {err}')
+                    num_entities_failed += 1
+
+        logger.info(f'Num entities not found: {num_entities_not_found}, num entities failed: {num_entities_failed}')
 
         num_cases = len(cases)
         num_cases_failed = 0
@@ -76,8 +121,6 @@ class Command(BaseCommand):
                 for de in case.docket_entries.all():
                     docs += de.documents.all()
 
-                ppl_set = {}
-                org_set = {}
                 for doc in docs:
                     # try to get doc text from file
                     try:
@@ -97,41 +140,16 @@ class Command(BaseCommand):
                         )
                         continue
 
-                    # check if text is coherent. if not, continue loop
                     try:
-                        if not cd.check_coherence(text):
-                            logger.debug(f'(Case {case_idx} / {num_cases}) Text not coherent (doc={doc.id}). Skipping.')
-                            continue
+                        # consolidate case document entities and add
+                        case.people.add(*(doc.people))
+                        case.organizations.add(*(doc.organizations))
+                        case.entities.add(*(doc.entities))
+
                     except Exception as err:
                         logger.error(
-                            f'(Case {case_idx} / {num_cases}) Coherence detection failed (doc={doc.id}). Reason: {err}'
+                            f'(Case {case_idx} / {num_cases}) Entity agg failed (doc={doc.id}). Reason: {err}'
                         )
-                        continue
-
-                    try:
-                        # get entities from text
-                        ppl, orgs = get_ppl_and_orgs(text)
-                        ppl_set[doc.id] = ppl
-                        org_set[doc.id] = orgs
-
-                        # save entities in doc model
-                        people = [a[0] for a in sorted(ppl.items(), key=lambda x: x[1], reverse=True)]
-                        organizations = [a[0] for a in sorted(orgs.items(), key=lambda x: x[1], reverse=True)]
-                        doc.people.set(*people)
-                        doc.organizations.set(*organizations)
-                        total = people + organizations
-                        doc.entities.set(*total)
-                        doc.save()
-                    except Exception as err:
-                        logger.error(
-                            f'(Case {case_idx} / {num_cases}) Entity extraction failed (doc={doc.id}). Reason: {err}'
-                        )
-                # consolidate case document entities and add
-                people = agg_across_entities(ppl_set)
-                organizations = agg_across_entities(org_set)
-                case.people.set(*people)
-                case.organizations.set(*organizations)
-                case.entities.set(*(people + organizations))
                 case.save()
 
             except Exception as err:
