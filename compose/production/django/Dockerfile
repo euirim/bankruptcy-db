@@ -71,7 +71,7 @@ COPY --from=client-builder /app /app
 
 RUN chown -R django /app
 
-USER django
+#USER django
 
 WORKDIR /app
 
