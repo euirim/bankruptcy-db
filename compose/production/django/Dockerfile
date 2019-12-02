@@ -69,7 +69,7 @@ RUN chmod +x /start-flower
 COPY --from=client-builder /app /app
 
 
-RUN chown -R django /app
+#RUN chown -R django /app
 
 #USER django
 

@@ -12,7 +12,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - .:/app
+      - ./data:/app/data
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
