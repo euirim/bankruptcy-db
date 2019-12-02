@@ -22,7 +22,7 @@ RUN apk update \
   # CFFI dependencies
   && apk add libffi-dev py-cffi \
   # for spaCy
-  && apk add g++ \
+  && apk add g++ gfortran \
   # for pdf2image
   && apk add poppler-utils \
   # microsoft fonts

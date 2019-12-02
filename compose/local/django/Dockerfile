@@ -15,7 +15,7 @@ RUN apk update \
   # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
   && apk add postgresql-client \
   # for spaCy
-  && apk add g++ \
+  && apk add g++ gfortran \
   # for pdf2image
   && apk add poppler-utils \
   # microsoft fonts
