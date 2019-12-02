@@ -136,7 +136,7 @@ class Command(BaseCommand):
                 try:
                     case = CaseObj(fn)
                 except:
-                    raise CaseParseError
+                    raise CaseParseError("Parsing case failed.")
 
                 # Build case fields for django model interaction
                 try:

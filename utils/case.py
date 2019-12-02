@@ -14,7 +14,7 @@ class Case:
             self.__data = json.load(f)
         self.entries = []
         for entry_data in self.__data["docket_entries"]:
-            entry = DocketEntryObj(entry_data)
+            entry = DocketEntry(entry_data)
             self.entries.append(entry)
 
     def get_raw_data(self):
@@ -108,7 +108,7 @@ class DocketEntry:
         self.__data = data
         self.documents = []
         for doc_data in self.__data["recap_documents"]:
-            doc = DocumentObj(doc_data)
+            doc = Document(doc_data)
             self.documents.append(doc)
 
     def get_id(self):
