@@ -1,5 +1,5 @@
 build:
-	docker-compose -f local.yml build --force-rm --parallel
+	docker-compose -f local.yml build --force-rm
 start:
 	docker-compose -f local.yml up
 run_django:
