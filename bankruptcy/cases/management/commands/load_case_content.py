@@ -10,6 +10,9 @@ from utils.case import Case as CaseObj, DocketEntry as DocketEntryObj, Document 
 from utils.coherence import CoherenceDetector
 from utils.entities import get_ppl_and_orgs, agg_across_entities
 
+if not os.path.exists('./logs'):
+    os.makedirs('./logs')
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',

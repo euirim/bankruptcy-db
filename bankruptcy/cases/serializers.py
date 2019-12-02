@@ -14,11 +14,18 @@ class CaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Case
         fields = ['id', 'url', 'name', 'recap_id', 'pacer_id', 'date_filed', 'date_created', 'date_terminated',
-                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries', 'recap_url']
+                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries', 'recap_url',]
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        exclude = ('text',)
 
 
 class DocketEntrySerializer(serializers.ModelSerializer):
     case = serializers.PrimaryKeyRelatedField(read_only=True)
+    documents = DocumentSerializer(many=True, read_only=True)
 
     class Meta:
         model = DocketEntry
@@ -26,13 +33,7 @@ class DocketEntrySerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class DocumentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Document
-        fields = '__all__'
-
-
 class CaseDocumentSerializer(DocSerializer):
     class Meta:
         document = CaseDocument
-        fields = '__all__'
+        exclude = ('text',)

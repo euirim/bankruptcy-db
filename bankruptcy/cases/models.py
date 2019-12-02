@@ -54,7 +54,6 @@ class Case(models.Model):
     def __str__(self):
         return self.name
 
-
 class DocketEntry(models.Model):
     recap_id = models.IntegerField()
     date_filed = models.DateField(db_index=True, blank=True, null=True)
@@ -68,6 +67,9 @@ class DocketEntry(models.Model):
 
     def __str__(self):
         return str(self.recap_id)
+
+    class Meta:
+        ordering = ['date_filed', 'date_created']
 
 
 class Document(models.Model):

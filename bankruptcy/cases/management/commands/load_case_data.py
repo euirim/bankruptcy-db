@@ -8,6 +8,9 @@ from utils.case import Case as CaseObj, DocketEntry as DocketEntryObj, Document 
 from bankruptcy.cases.models import Case, DocketEntry, Document
 from django.core.files import File
 
+if not os.path.exists('./logs'):
+    os.makedirs('./logs')
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
