@@ -7,12 +7,14 @@ import {
   List,
   Card,
   Badge,
+  Alert,
 } from 'antd';
 import { useParams } from 'react-router-dom';
 
 import myAPI from '../utils/api';
 import DocketEntry from './DocketEntry';
 import { prettyDate } from '../utils';
+import 'antd/lib/alert/style';
 import 'antd/lib/badge/style';
 import 'antd/lib/button/style';
 import 'antd/lib/card/style';
@@ -40,6 +42,7 @@ const CaseHeader = props => {
           type="primary"
           shape="round"
           icon="export"
+          target="_blank"
         >
           View on Recap
         </Button>,
@@ -85,6 +88,13 @@ const CaseDocket = props => {
         </>
       }
     >
+      <Alert
+        className="docket-alert"
+        message="Docket May Be Incomplete"
+        description="Please reference the original case on PACER to verify any conclusions."
+        type="warning"
+        showIcon
+      />
       <List
         dataSource={props.docketEntries ? props.docketEntries : []}
         loading={props.loading}
@@ -137,7 +147,10 @@ const Case = () => {
         chapter={caseItem.chapter}
         recapUrl={caseItem.recap_url}
       />
-      <CaseDocket docketEntries={caseItem.docket_entries} loading={loading} />
+      <CaseDocket
+        docketEntries={caseItem.docket_entries.slice(0, 30)}
+        loading={loading}
+      />
     </>
   );
 };

@@ -1,29 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { List, Typography, Collapse, Icon } from 'antd';
+import { List, Typography, Collapse, Icon, Tag } from 'antd';
 
 import { prettyDate } from '../utils';
 import myAPI from '../utils/api';
 import 'antd/lib/list/style';
+import 'antd/lib/tag/style';
 import './DocketEntry.less';
 
-const { Title } = Typography;
+const { Text, Title } = Typography;
 const { Panel } = Collapse;
 
 const DocumentListItem = props => {
   return (
     <List.Item
+      className="doc-list-item"
       key={props.key}
       extra={
         props.preview ? (
-          <a href={props.fileUrl}>
-            <img width={100} alt="document_preview" src={props.preview} />
+          <a href={props.fileUrl} target="_blank">
+            <div className="doc-preview">
+              <img width={150} alt="document_preview" src={props.preview} />
+            </div>
           </a>
         ) : null
       }
     >
       <List.Item.Meta
         title={
-          props.fileUrl ? <a href={props.fileUrl}>{props.id}</a> : props.id
+          props.fileUrl ? (
+            <a href={props.fileUrl} target="_blank">
+              PACER: {props.title ? props.title : 'Unknown'}
+            </a>
+          ) : (
+            <>
+              {`PACER: ${props.title ? props.title : 'Unknown'}`}
+              <Tag className="doc-unavailable-tag" color="red">
+                Unavailable
+              </Tag>
+            </>
+          )
         }
         description={
           props.description ? props.description : 'Description not available.'
@@ -43,15 +58,24 @@ const DocumentList = props => {
       destroyInactivePanel
       className="collapse-inset"
     >
-      <Panel header="Documents" key="1">
+      <Panel
+        header={
+          <Text className="docs-panel-header-title">
+            Documents ({props.docs.length})
+          </Text>
+        }
+        key="1"
+      >
         <List
+          className="doc-list"
           dataSource={props.docs}
+          bordered
           itemLayout="vertical"
           renderItem={(d, i) => (
             <DocumentListItem
               key={i}
               fileUrl={d.file_url}
-              title={d.id}
+              title={d.pacer_id}
               description={d.description}
               preview={d.preview}
             />
@@ -85,7 +109,7 @@ export default props => {
   }
 
   return (
-    <List.Item>
+    <List.Item className="docket-entry-item">
       <List.Item.Meta
         title={prettyDate(entry.date_filed)}
         description={
