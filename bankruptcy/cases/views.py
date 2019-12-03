@@ -99,7 +99,7 @@ class SearchViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         cases = CaseDocument.search().query(
             'multi_match',
             query=query_str,
-            fields=['name', 'jurisdiction']
+            fields=['name', 'jurisdiction', 'entities', 'creditors']
         )[:30].to_queryset()
 
         return Response(CaseSerializer(cases, many=True, context={'request': request}).data)
