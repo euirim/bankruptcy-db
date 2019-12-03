@@ -37,7 +37,16 @@ const getCasesByEntity = async entitySlug => {
     const response = await axios.get(`cases/by_entity?entity=${entitySlug}`);
     return response.data;
   } catch (e) {
-    throw Error('Search failed.');
+    throw Error('Getting cases by entity failed.');
+  }
+};
+
+const getSimilarCases = async caseId => {
+  try {
+    const response = await axios.get(`cases/similar?id=${caseId}`);
+    return response.data;
+  } catch (e) {
+    throw Error('Getting similar cases failed.');
   }
 };
 
@@ -46,6 +55,7 @@ const myAPI = {
   getCase,
   getDocketEntry,
   getCasesByEntity,
+  getSimilarCases,
 };
 
 export default myAPI;

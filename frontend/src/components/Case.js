@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 
 import myAPI from '../utils/api';
 import DocketEntry from './DocketEntry';
+import SimilarCases from './SimilarCases';
 import { prettyDate } from '../utils';
 import 'antd/lib/alert/style';
 import 'antd/lib/badge/style';
@@ -165,6 +166,7 @@ const Case = () => {
         docketEntries={caseItem.docket_entries.slice(0, 30)}
         loading={loading}
       />
+      <SimilarCases className="similar-cases" caseId={caseItem.id} creditors={caseItem.creditors} entities={caseItem.entities} />
     </>
   );
 };

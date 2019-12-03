@@ -13,7 +13,7 @@ const CaseListItem = props => {
   const dateFiled = prettyDate(props.dateFiled);
   const dateCreated = prettyDate(props.dateCreated);
   return (
-    <List.Item className="case-list-item">
+    <List.Item className='case-list-item'>
       <List.Item.Meta
         title={<Link to={`/cases/${props.id}`}>{props.name}</Link>}
         description={`PACER: ${props.pacerId}`}
