@@ -61,13 +61,13 @@ class Command(BaseCommand):
         ENTITY_DATA_FILENAME = './data/doc_to_entities.csv'
         MIN_ENTITY_THRESHOLD = 10
 
-        cases = Case.objects.all()
 
         # Add entities to documents
         num_entities_failed = 0
         num_entities_not_found = 0
         with open(ENTITY_DATA_FILENAME, 'r', newline='') as f:
             reader = csv.reader(f, quoting=csv.QUOTE_MINIMAL, delimiter='\t')
+            print(f'Num CSV Rows: {len(reader)}')
             for i, row in enumerate(reader):
                 try:
                     # skip header
@@ -89,6 +89,8 @@ class Command(BaseCommand):
                     people = get_top_percentile(people, 20, MIN_ENTITY_THRESHOLD)
                     organizations = get_top_percentile(organizations, 20, MIN_ENTITY_THRESHOLD)
 
+                    print(people)
+
                     doc.people.set(*people)
                     doc.organizations.set(*organizations)
                     total = people + organizations
@@ -100,9 +102,15 @@ class Command(BaseCommand):
 
         logger.info(f'Num entities not found: {num_entities_not_found}, num entities failed: {num_entities_failed}')
 
-        num_cases = len(cases)
+        num_cases = Case.objects.all().count()
+        highest_case_id = Case.objects.last()
         num_cases_failed = 0
-        for case_idx, case in enumerate(cases):
+        for case_idx in range(highest_case_id):
+            try:
+                case = Case.objects.get(id=case_idx)
+            except ObjectDoesNotExist:
+                continue
+
             logger.info(f'(Case {case_idx} / {num_cases}) Loading content.')
             try:
                 # add case creditor entities
