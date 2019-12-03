@@ -18,9 +18,22 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
+    people = serializers.SerializerMethodField()
+    organizations = serializers.SerializerMethodField()
+
     class Meta:
         model = Document
         exclude = ('text',)
+
+    def get_people(self, obj):
+        names = obj.people.names()
+        slugs = obj.people.slugs()
+        return list(zip(names, slugs))
+
+    def get_organizations(self, obj):
+        names = obj.organizations.names()
+        slugs = obj.organizations.slugs()
+        return list(zip(names, slugs))
 
 
 class DocketEntrySerializer(serializers.ModelSerializer):

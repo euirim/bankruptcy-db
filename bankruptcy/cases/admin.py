@@ -15,5 +15,5 @@ class DocketEntryAdmin(admin.ModelAdmin):
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ["recap_id", "pacer_id", "doc_type", "is_available"]
-    search_fields = ["description", "text"]
+    search_fields = ["description", "text", "pacer_id"]
     raw_id_fields = ["docket_entry"]
