@@ -115,6 +115,9 @@ class Command(BaseCommand):
             except ObjectDoesNotExist:
                 continue
 
+            if num_cases_loaded < 228:
+                continue
+
             logger.info(f'(Case {num_cases_loaded} / {num_cases}) Loading content.')
             try:
                 # add case creditor entities
