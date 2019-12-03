@@ -1,3 +1,4 @@
+import ast
 import csv
 import json
 import logging
@@ -61,7 +62,6 @@ class Command(BaseCommand):
         ENTITY_DATA_FILENAME = './data/doc_to_entities.csv'
         MIN_ENTITY_THRESHOLD = 10
 
-
         # Add entities to documents
         num_entities_failed = 0
         num_entities_not_found = 0
@@ -86,10 +86,10 @@ class Command(BaseCommand):
                         continue
 
                     # Filter out top 10%
+                    people = ast.literal_eval(people)
+                    organizations = ast.literal_eval(organizations)
                     people = get_top_percentile(people, 20, MIN_ENTITY_THRESHOLD)
                     organizations = get_top_percentile(organizations, 20, MIN_ENTITY_THRESHOLD)
-
-                    print(people)
 
                     doc.people.set(*people)
                     doc.organizations.set(*organizations)
