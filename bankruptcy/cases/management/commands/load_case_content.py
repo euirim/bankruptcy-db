@@ -63,6 +63,7 @@ class Command(BaseCommand):
         MIN_ENTITY_THRESHOLD = 10
 
         # Add entities to documents
+        """
         num_entities_failed = 0
         num_entities_not_found = 0
         with open(ENTITY_DATA_FILENAME, 'r', newline='') as f:
@@ -103,6 +104,7 @@ class Command(BaseCommand):
             print(f'Number of rows: {i}')
 
         logger.info(f'Num entities not found: {num_entities_not_found}, num entities failed: {num_entities_failed}')
+        """
 
         num_cases = Case.objects.all().count()
         highest_case_id = Case.objects.last().id
