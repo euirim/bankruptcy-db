@@ -28,10 +28,10 @@ COPY ./requirements /requirements
 RUN pip install -r /requirements/local.txt
 
 # Install Spacy Models
-RUN python -m spacy download en_core_web_lg
+#RUN python -m spacy download en_core_web_lg
 
 # Install NLTK corpus
-RUN python -m nltk.downloader words brown
+#RUN python -m nltk.downloader words brown
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
