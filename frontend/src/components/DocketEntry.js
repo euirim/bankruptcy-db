@@ -11,6 +11,9 @@ const { Text, Title } = Typography;
 const { Panel } = Collapse;
 
 const DocumentListItem = props => {
+  const isSealedTag = (
+    <>{props.isSealed ? <Tag className="doc-title-tag" color="yellow">Sealed</Tag> : null}</>
+  );
   return (
     <List.Item
       className="doc-list-item"
@@ -28,15 +31,19 @@ const DocumentListItem = props => {
       <List.Item.Meta
         title={
           props.fileUrl ? (
-            <a href={props.fileUrl} target="_blank">
-              PACER: {props.title ? props.title : 'Unknown'}
-            </a>
+            <>
+              <a href={props.fileUrl} target="_blank">
+                PACER: {props.title ? props.title : 'Unknown'}
+              </a>
+              {isSealedTag}
+            </>
           ) : (
             <>
               {`PACER: ${props.title ? props.title : 'Unknown'}`}
-              <Tag className="doc-unavailable-tag" color="red">
+              <Tag className="doc-title-tag" color="red">
                 Unavailable
               </Tag>
+              {isSealedTag}
             </>
           )
         }
