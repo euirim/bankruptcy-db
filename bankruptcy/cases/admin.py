@@ -10,8 +10,10 @@ class CaseAdmin(admin.ModelAdmin):
 class DocketEntryAdmin(admin.ModelAdmin):
     list_display = ["recap_id", "case", "date_filed"]
     search_fields = ["recap_id", "description"]
+    raw_id_fields = ["case"]
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ["recap_id", "pacer_id", "doc_type", "is_available"]
     search_fields = ["description", "text"]
+    raw_id_fields = ["docket_entry"]
