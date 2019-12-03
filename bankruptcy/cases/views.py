@@ -80,7 +80,7 @@ class CaseViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.Gen
         if not entity:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        cases = Case.objects.filter(Q(entities__slug__in=[entity]) | Q(creditors__slug__in=[entity]))
+        cases = Case.objects.filter(Q(entities__slug__in=[entity]) | Q(creditors__slug__in=[entity])).distinct()
 
         return Response(self.serializer_class(cases, many=True, context={'request': request}).data)
 

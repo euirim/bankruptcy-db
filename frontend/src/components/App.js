@@ -1,13 +1,14 @@
-import React from "react";
-import { Layout, Menu, Typography } from "antd";
-import "antd/lib/menu/style";
-import "antd/lib/layout/style";
-import "./App.less";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import Home from "./Home";
-import About from "./About";
-import Search from "./Search";
-import Case from "./Case";
+import React from 'react';
+import { Layout, Menu, Typography } from 'antd';
+import 'antd/lib/menu/style';
+import 'antd/lib/layout/style';
+import './App.less';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+import Search from './Search';
+import Case from './Case';
+import Entity from './Entity';
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -24,12 +25,12 @@ function App() {
               </Title>
             </div>
             <Menu className="nav" theme="dark" mode="horizontal">
-              <Menu.Item key="1" style={{ float: "right", paddingRight: 0 }}>
+              <Menu.Item key="1" style={{ float: 'right', paddingRight: 0 }}>
                 <Link to="/about">About</Link>
               </Menu.Item>
             </Menu>
           </Header>
-          <Content style={{ padding: "24px 50px" }}>
+          <Content style={{ padding: '24px 50px' }}>
             <Switch>
               <Route path="/about">
                 <About />
@@ -40,12 +41,15 @@ function App() {
               <Route path="/search/:queryString">
                 <Search />
               </Route>
+              <Route path="/entities/:slug">
+                <Entity />
+              </Route>
               <Route path="/">
                 <Home />
               </Route>
             </Switch>
           </Content>
-          <Footer style={{ textAlign: "center" }}>©2019 Bankruptcy Map</Footer>
+          <Footer style={{ textAlign: 'center' }}>©2019 Bankruptcy Map</Footer>
         </Router>
       </Layout>
     </div>
