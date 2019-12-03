@@ -8,8 +8,10 @@ import {
   Card,
   Badge,
   Alert,
+  Tag,
 } from 'antd';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import myAPI from '../utils/api';
 import DocketEntry from './DocketEntry';
@@ -21,6 +23,7 @@ import 'antd/lib/card/style';
 import 'antd/lib/descriptions/style';
 import 'antd/lib/list/style';
 import 'antd/lib/page-header/style';
+import 'antd/lib/tag/style';
 import './Case.less';
 
 const { Title } = Typography;
@@ -29,6 +32,13 @@ const CaseHeader = props => {
   const handleNA = val => {
     return val ? val : 'N/A';
   };
+  const creditors = props.creditors
+    ? props.creditors.map(p => (
+        <Tag color='green'>
+          <Link to={`/entities/${p[1]}`}>{p[0]}</Link>
+        </Tag>
+      ))
+    : 'N/A';
 
   console.log(props.name);
   return (
@@ -68,6 +78,9 @@ const CaseHeader = props => {
         </Descriptions.Item>
         <Descriptions.Item label="Chapter">
           {handleNA(props.chapter)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Creditors">
+          {handleNA(creditors)}
         </Descriptions.Item>
       </Descriptions>
     </PageHeader>
@@ -146,6 +159,7 @@ const Case = () => {
         jurisdiction={caseItem.jurisdiction}
         chapter={caseItem.chapter}
         recapUrl={caseItem.recap_url}
+        creditors={caseItem.creditors}
       />
       <CaseDocket
         docketEntries={caseItem.docket_entries.slice(0, 30)}

@@ -7,14 +7,20 @@ from .documents import CaseDocument
 
 class CaseSerializer(serializers.ModelSerializer):
     recap_url = serializers.SerializerMethodField('get_recap_url')
+    creditors = serializers.SerializerMethodField()
 
     def get_recap_url(self, obj):
         return f"https://www.courtlistener.com{obj.data['absolute_url']}"
 
+    def get_creditors(self, obj):
+        names = obj.creditors.names()
+        slugs = obj.creditors.slugs()
+        return list(zip(names, slugs))
+
     class Meta:
         model = Case
         fields = ['id', 'url', 'name', 'recap_id', 'pacer_id', 'date_filed', 'date_created', 'date_terminated',
-                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries', 'recap_url',]
+                  'date_blocked', 'jurisdiction', 'chapter', 'docket_entries', 'recap_url', 'creditors']
 
 
 class DocumentSerializer(serializers.ModelSerializer):
