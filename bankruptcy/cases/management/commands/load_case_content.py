@@ -105,7 +105,7 @@ class Command(BaseCommand):
         logger.info(f'Num entities not found: {num_entities_not_found}, num entities failed: {num_entities_failed}')
 
         num_cases = Case.objects.all().count()
-        highest_case_id = Case.objects.last()
+        highest_case_id = Case.objects.last().id
         num_cases_failed = 0
         for case_idx in range(highest_case_id):
             try:
