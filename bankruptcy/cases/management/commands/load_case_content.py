@@ -91,10 +91,10 @@ class Command(BaseCommand):
                     people = get_top_percentile(people, 20, MIN_ENTITY_THRESHOLD)
                     organizations = get_top_percentile(organizations, 20, MIN_ENTITY_THRESHOLD)
 
-                    doc.people.set(*people)
-                    doc.organizations.set(*organizations)
+                    doc.people.set(*people, clear=True)
+                    doc.organizations.set(*organizations, clear=True)
                     total = people + organizations
-                    doc.entities.set(*total)
+                    doc.entities.set(*total, clear=True)
                     doc.save()
                 except Exception as err:
                     logger.error(f'(doc: {doc_id}) Can\'t load entities for doc. Reason: {err}')
@@ -107,13 +107,15 @@ class Command(BaseCommand):
         num_cases = Case.objects.all().count()
         highest_case_id = Case.objects.last().id
         num_cases_failed = 0
+        num_cases_loaded = 0
         for case_idx in range(highest_case_id):
             try:
                 case = Case.objects.get(id=case_idx)
+                num_cases_loaded += 1
             except ObjectDoesNotExist:
                 continue
 
-            logger.info(f'(Case {case_idx} / {num_cases}) Loading content.')
+            logger.info(f'(Case {num_cases_loaded} / {num_cases}) Loading content.')
             try:
                 # add case creditor entities
                 try:
@@ -121,15 +123,20 @@ class Command(BaseCommand):
                     with open(FORM_DATA_FILENAME, 'r') as f:
                         form_data = json.load(f)
 
-                    case.creditors.set(*(form_data.get(str(case.id), [[]])[0]))
+                    case.creditors.set(*(form_data.get(str(case.id), [[]])[0]), clear=True)
                 except Exception as err:
                     logger.error(
-                        f'(Case {case_idx} / {num_cases}) Failed to add creditor info to case. Explanation: {err}'
+                        f'(Case {num_cases_loaded} / {num_cases}) Failed to add creditor info to case. Explanation: {err}'
                     )
 
                 docs = []
                 for de in case.docket_entries.all():
                     docs += de.documents.all()
+
+                # clear existing case entities, orgs, people
+                case.people.clear()
+                case.organizations.clear()
+                case.entities.clear()
 
                 for doc in docs:
                     # try to get doc text from file
@@ -138,7 +145,7 @@ class Command(BaseCommand):
                         ocr_path = os.path.join(OCR_OUTPUT_DIR, ocr_fn)
                         if not os.path.exists(ocr_path):
                             logger.debug(
-                                f'(Case {case_idx} / {num_cases}) File corresponding to doc {doc.id} does not exist.'
+                                f'(Case {num_cases_loaded} / {num_cases}) File corresponding to doc {doc.id} does not exist.'
                             )
                             continue
 
@@ -146,25 +153,25 @@ class Command(BaseCommand):
                             text = f.read()
                     except Exception as err:
                         logger.error(
-                            f'(Case {case_idx} / {num_cases}) Failed to get doc {doc.id}\'s text. Explanation: {err}'
+                            f'(Case {num_cases_loaded} / {num_cases}) Failed to get doc {doc.id}\'s text. Explanation: {err}'
                         )
                         continue
 
                     try:
                         # consolidate case document entities and add
-                        case.people.add(*(doc.people))
-                        case.organizations.add(*(doc.organizations))
-                        case.entities.add(*(doc.entities))
+                        case.people.add(*(doc.people.names()))
+                        case.organizations.add(*(doc.organizations.names()))
+                        case.entities.add(*(doc.entities.names()))
 
                     except Exception as err:
                         logger.error(
-                            f'(Case {case_idx} / {num_cases}) Entity agg failed (doc={doc.id}). Reason: {err}'
+                            f'(Case {num_cases_loaded} / {num_cases}) Entity agg failed (doc={doc.id}). Reason: {err}'
                         )
                 case.save()
 
             except Exception as err:
                 num_cases_failed += 1
-                logger.error(f'(Case {case_idx} / {num_cases}) Loading case content failed. Explanation: {err}')
+                logger.error(f'(Case {num_cases_loaded} / {num_cases}) Loading case content failed. Explanation: {err}')
 
         logger.info(
             f'Finished loading content. Loaded {num_cases - num_cases_failed} / {num_cases} cases successfully.')
