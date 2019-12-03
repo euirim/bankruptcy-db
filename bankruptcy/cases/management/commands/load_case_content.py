@@ -67,7 +67,7 @@ class Command(BaseCommand):
         num_entities_not_found = 0
         with open(ENTITY_DATA_FILENAME, 'r', newline='') as f:
             reader = csv.reader(f, quoting=csv.QUOTE_MINIMAL, delimiter='\t')
-            print(f'Num CSV Rows: {len(reader)}')
+            i = 0
             for i, row in enumerate(reader):
                 try:
                     # skip header
@@ -99,6 +99,8 @@ class Command(BaseCommand):
                 except Exception as err:
                     logger.error(f'(doc: {doc_id}) Can\'t load entities for doc. Reason: {err}')
                     num_entities_failed += 1
+            
+            print(f'Number of rows: {i}')
 
         logger.info(f'Num entities not found: {num_entities_not_found}, num entities failed: {num_entities_failed}')
 
