@@ -64,7 +64,7 @@ class Case(models.Model):
             return None
 
         duration = self.date_terminated - self.date_filed
-        return [self.date_filed, duration.days] 
+        return duration.days
          
 
 class DocketEntry(models.Model):

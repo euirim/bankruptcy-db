@@ -16,9 +16,10 @@ class Command(BaseCommand):
 
             print('Writing durations.')
             for case in cases:
-                possible_duration = case.get_duration()
-                if possible_duration is None:
+                duration = case.get_duration()
+
+                if case.date_filed is None:
                     continue
 
-                writer.writerow(possible_duration)
+                writer.writerow([case.date_filed, duration])
             
