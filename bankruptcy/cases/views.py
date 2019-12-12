@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.db.models import Q
 from django.views.generic import DetailView
+from django.core.exceptions import ObjectDoesNotExist
 
 from django_elasticsearch_dsl_drf.constants import (
     LOOKUP_FILTER_RANGE,
@@ -73,6 +74,35 @@ class CaseViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.Gen
 
         return Response(cases)
 
+    @action(detail=False, methods=['get'])
+    def by_entity(self, request):
+        entity = request.GET.get('entity')
+        if not entity:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        cases = Case.objects.filter(Q(entities__slug__in=[entity]) | Q(creditors__slug__in=[entity])).distinct()
+
+        return Response(self.serializer_class(cases, many=True, context={'request': request}).data)
+
+    @action(detail=False, methods=['get'])
+    def similar(self, request, pk=None):
+        pk = request.GET.get('id')
+        try:
+            case = Case.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        similar_objs = case.entities.similar_objects()[:100]
+        result = []
+        for obj in similar_objs:
+            try:
+                obj.jurisdiction
+                result.append(obj)
+            except AttributeError:
+                pass
+
+        return Response(self.serializer_class(result[:3], many=True, context={'request': request}).data)
+
 
 class DocketEntryViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = DocketEntry.objects.all()
@@ -99,7 +129,7 @@ class SearchViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         cases = CaseDocument.search().query(
             'multi_match',
             query=query_str,
-            fields=['name', 'jurisdiction']
+            fields=['name', 'jurisdiction', 'entities', 'creditors']
         )[:30].to_queryset()
 
         return Response(CaseSerializer(cases, many=True, context={'request': request}).data)

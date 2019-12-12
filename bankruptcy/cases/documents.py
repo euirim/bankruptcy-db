@@ -1,10 +1,12 @@
-from django_elasticsearch_dsl import Document
+from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from .models import Case
 
 
 @registry.register_document
 class CaseDocument(Document):
+    creditors = fields.TextField()
+    entities = fields.TextField()
     class Index:
         name = 'cases' 
         # See Elasticsearch Indices API reference for available settings
@@ -35,3 +37,9 @@ class CaseDocument(Document):
         # Paginate the django queryset used to populate the index with the specified size
         # (by default it uses the database driver's default setting)
         queryset_pagination = 100
+    
+    def prepare_creditors(self, instance):
+        return ' '.join(instance.creditors.names())
+
+    def prepare_entities(self, instance):
+        return ' '.join(instance.entities.names())

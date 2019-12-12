@@ -7,18 +7,24 @@ import {
   List,
   Card,
   Badge,
+  Alert,
+  Tag,
 } from 'antd';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import myAPI from '../utils/api';
 import DocketEntry from './DocketEntry';
+import SimilarCases from './SimilarCases';
 import { prettyDate } from '../utils';
+import 'antd/lib/alert/style';
 import 'antd/lib/badge/style';
 import 'antd/lib/button/style';
 import 'antd/lib/card/style';
 import 'antd/lib/descriptions/style';
 import 'antd/lib/list/style';
 import 'antd/lib/page-header/style';
+import 'antd/lib/tag/style';
 import './Case.less';
 
 const { Title } = Typography;
@@ -27,6 +33,13 @@ const CaseHeader = props => {
   const handleNA = val => {
     return val ? val : 'N/A';
   };
+  const creditors = props.creditors
+    ? props.creditors.map(p => (
+        <Tag color='green'>
+          <Link to={`/entities/${p[1]}`}>{p[0]}</Link>
+        </Tag>
+      ))
+    : 'N/A';
 
   console.log(props.name);
   return (
@@ -40,6 +53,7 @@ const CaseHeader = props => {
           type="primary"
           shape="round"
           icon="export"
+          target="_blank"
         >
           View on Recap
         </Button>,
@@ -66,6 +80,9 @@ const CaseHeader = props => {
         <Descriptions.Item label="Chapter">
           {handleNA(props.chapter)}
         </Descriptions.Item>
+        <Descriptions.Item label="Creditors">
+          {handleNA(creditors)}
+        </Descriptions.Item>
       </Descriptions>
     </PageHeader>
   );
@@ -85,6 +102,13 @@ const CaseDocket = props => {
         </>
       }
     >
+      <Alert
+        className="docket-alert"
+        message="Docket May Be Incomplete"
+        description="Please reference the original case on PACER to verify any conclusions."
+        type="warning"
+        showIcon
+      />
       <List
         dataSource={props.docketEntries ? props.docketEntries : []}
         loading={props.loading}
@@ -136,8 +160,13 @@ const Case = () => {
         jurisdiction={caseItem.jurisdiction}
         chapter={caseItem.chapter}
         recapUrl={caseItem.recap_url}
+        creditors={caseItem.creditors}
       />
-      <CaseDocket docketEntries={caseItem.docket_entries} loading={loading} />
+      <CaseDocket
+        docketEntries={caseItem.docket_entries.slice(0, 30)}
+        loading={loading}
+      />
+      <SimilarCases className="similar-cases" caseId={caseItem.id} creditors={caseItem.creditors} entities={caseItem.entities} />
     </>
   );
 };

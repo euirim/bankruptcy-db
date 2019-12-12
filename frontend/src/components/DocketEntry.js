@@ -1,66 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { List, Typography, Collapse, Icon } from 'antd';
+import { List, Typography } from 'antd';
 
 import { prettyDate } from '../utils';
 import myAPI from '../utils/api';
+import DocumentList from './DocumentList';
 import 'antd/lib/list/style';
+import 'antd/lib/tag/style';
 import './DocketEntry.less';
 
 const { Title } = Typography;
-const { Panel } = Collapse;
-
-const DocumentListItem = props => {
-  return (
-    <List.Item
-      key={props.key}
-      extra={
-        props.preview ? (
-          <a href={props.fileUrl}>
-            <img width={100} alt="document_preview" src={props.preview} />
-          </a>
-        ) : null
-      }
-    >
-      <List.Item.Meta
-        title={
-          props.fileUrl ? <a href={props.fileUrl}>{props.id}</a> : props.id
-        }
-        description={
-          props.description ? props.description : 'Description not available.'
-        }
-      />
-    </List.Item>
-  );
-};
-
-const DocumentList = props => {
-  return (
-    <Collapse
-      bordered={false}
-      expandIcon={({ isActive }) => (
-        <Icon type="caret-right" rotate={isActive ? 90 : 0} />
-      )}
-      destroyInactivePanel
-      className="collapse-inset"
-    >
-      <Panel header="Documents" key="1">
-        <List
-          dataSource={props.docs}
-          itemLayout="vertical"
-          renderItem={(d, i) => (
-            <DocumentListItem
-              key={i}
-              fileUrl={d.file_url}
-              title={d.id}
-              description={d.description}
-              preview={d.preview}
-            />
-          )}
-        />
-      </Panel>
-    </Collapse>
-  );
-};
 
 export default props => {
   const [entry, setEntry] = useState(null);
@@ -85,7 +33,7 @@ export default props => {
   }
 
   return (
-    <List.Item>
+    <List.Item className="docket-entry-item">
       <List.Item.Meta
         title={prettyDate(entry.date_filed)}
         description={

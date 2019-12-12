@@ -13,6 +13,7 @@ services:
       - redis
     volumes:
       - ./data:/app/data
+      - ./logs:/app/logs
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
