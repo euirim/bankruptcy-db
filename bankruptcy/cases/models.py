@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
@@ -53,6 +55,17 @@ class Case(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_duration(self):
+        if self.date_filed is None or self.date_terminated == datetime.datetime.utcnow().date()):
+            return None
+
+        if self.date_terminated is None:
+            return None
+
+        duration = self.date_terminated - self.date_filed
+        return [self.date_filed, duration.days] 
+         
 
 class DocketEntry(models.Model):
     recap_id = models.IntegerField()
