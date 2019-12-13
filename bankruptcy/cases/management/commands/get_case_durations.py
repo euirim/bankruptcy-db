@@ -10,13 +10,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # get durations in list of lists (with start date)
         highest_case_id = Case.objects.last().id
+        print(highest_case_id)
 
-        with open('./data/case_durations.csv', mode='w') as f:
-            writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        with open('./data/case_durations.csv', mode='w', newline='') as f:
+            writer = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(['date_filed', 'duration'])
 
             print('Writing durations.')
             for case_idx in range(highest_case_id):
+                print(case_idx)
                 try:
                     case = Case.objects.get(id=case_idx)
                 except ObjectDoesNotExist:
