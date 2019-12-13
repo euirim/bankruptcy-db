@@ -57,7 +57,7 @@ class Case(models.Model):
         return self.name
 
     def get_duration(self):
-        if self.date_filed is None or self.date_terminated == datetime.datetime.utcnow().date()):
+        if self.date_filed is None or self.date_terminated == datetime.datetime.utcnow().date():
             return None
 
         if self.date_terminated is None:
